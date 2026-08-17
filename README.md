@@ -106,6 +106,32 @@ The following environment variables configure the PostgreSQL connection:
 | `POSTGRES_DB` | Database name | `jellyfin` | Yes |
 | `POSTGRES_USER` | Database user | `jellyfin` | Yes |
 | `POSTGRES_PASSWORD` | Database password | - | Yes |
+| `POSTGRES_COMMAND_TIMEOUT` | Npgsql command timeout in seconds (`0` = no limit) | `30` | No |
+
+## Jellyfin Version
+
+The image is pinned to a specific Jellyfin release (currently **10.11.11**) rather than
+`jellyfin/jellyfin:latest`. The plugin carries its own set of EF Core migrations for the
+PostgreSQL schema, so it only matches the Jellyfin version it was built against — running a
+newer server against an older plugin leaves the database missing columns the server expects.
+
+## Troubleshooting
+
+### `column u.NormalizedUsername does not exist`
+
+Jellyfin 10.11.10 added a `NormalizedUsername` column to the `Users` table. Images built
+before that change shipped a plugin without the matching migration, so the column was never
+created. Pull the current image and restart — the plugin's migrations add the column, backfill
+it, and create the unique index on startup.
+
+If you already worked around it by adding the column by hand, drop it first, otherwise the
+migration fails with `column "NormalizedUsername" of relation "Users" already exists`:
+
+```sql
+ALTER TABLE public."Users" DROP COLUMN "NormalizedUsername";
+```
+
+Then start the new image and let the migrations run. Take a backup before doing this.
 
 ## Known Limitations
 

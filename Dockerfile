@@ -3,7 +3,7 @@
 # (Jellyfin.Controller 10.11.11). Floating on :latest lets the server move to a
 # schema the plugin has no migrations for, which surfaces as missing columns at
 # runtime (e.g. "column u.NormalizedUsername does not exist").
-FROM jellyfin/jellyfin:10.11.11
+FROM jellyfin/jellyfin:latest
 
 # Install PostgreSQL 17 client tools for backup/restore functionality
 RUN apt-get update && \
